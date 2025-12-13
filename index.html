@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Companion - Your Voice Journal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#FF8C00">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary-yellow: #FFFBEB;
+            --primary-orange: #FF8C00;
+            --primary-blue: #4682B4;
+            --light-orange: #FFE0B2;
+            --light-blue: #87CEEB;
+            --white: #FFFFFF;
+            --gray: #666666;
+            --light-gray: #f5f5f5;
+            --dark-gray: #333333;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-heavy: 0 8px 25px rgba(0, 0, 0, 0.15);
+            --border-radius: 16px;
+            --spacing-xs: 8px;
+            --spacing-sm: 16px;
+            --spacing-md: 24px;
+            --spacing-lg: 32px;
+            --spacing-xl: 48px;
+        }
+
+        body {
+            background-color: var(--primary-yellow);
+            color: var(--dark-gray);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* App Header */
+        .app-header {
+            background-color: var(--white);
+            padding: var(--spacing-sm) var(--spacing-md);
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .app-title {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .app-logo {
+            font-size: 1.5rem;
+            color: var(--primary-orange);
+        }
+
+        .app-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-orange);
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            cursor: pointer;
+            padding: var(--spacing-xs);
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .menu-button:active {
+            background-color: var(--light-gray);
+        }
+
+        /* Navigation Drawer */
+        .nav-drawer {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background-color: var(--white);
+            box-shadow: var(--shadow-heavy);
+            z-index: 20;
+            transition: left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            padding-top: var(--spacing-xl);
+        }
+
+        .nav-drawer.open {
+            left: 0;
+        }
+
+        .nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 15;
+            display: none;
+        }
+
+        .nav-overlay.open {
+            display: block;
+        }
+
+        .nav-header {
+            padding: 0 var(--spacing-md) var(--spacing-md);
+            border-bottom: 1px solid var(--light-gray);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .nav-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-orange);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .nav-items {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            text-decoration: none;
+            color: var(--dark-gray);
+            font-weight: 500;
+            transition: background-color 0.2s;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-item.active {
+            background-color: var(--primary-yellow);
+            border-left-color: var(--primary-orange);
+            color: var(--primary-orange);
+        }
+
+        .nav-item:active {
+            background-color: var(--light-gray);
+        }
+
+        .nav-icon {
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-footer {
+            padding: var(--spacing-md);
+            border-top: 1px solid var(--light-gray);
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: var(--spacing-md);
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Screen Styles */
+        .screen {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Home Screen */
+        .welcome-card {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow);
+            margin-bottom: var(--spacing-lg);
+            text-align: center;
+        }
+
+        .welcome-icon {
+            font-size: 3rem;
+            color: var(--primary-orange);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .welcome-title {
+            font-size: 1.75rem;
+            color: var(--primary-blue);
+            margin-bottom: var(--spacing-sm);
+            font-weight: 700;
+        }
+
+        .welcome-text {
+            color: var(--gray);
+            margin-bottom: var(--spacing-lg);
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .action-button {
+            display: flex;
+            margin-bottom:10px;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-md);
+            background-color: var(--primary-orange);
+            color: var(--white);
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: var(--shadow);
+        }
+
+        .action-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-button.secondary {
+            background-color: var(--primary-blue);
+        }
+
+        /* Record Screen */
+        .companion-bubble {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius);
+            margin-bottom: var(--spacing-lg);
+            text-align: center;
+            font-size: 1.2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .waveform-container {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: var(--spacing-lg) 0;
+        }
+
+        .waveform {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            height: 80px;
+        }
+
+        .wave-bar {
+            width: 12px;
+            background-color: var(--primary-orange);
+            border-radius: 6px;
+            transition: height 0.1s;
+        }
+
+        .record-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: var(--spacing-xl);
+        }
+
+        .record-button {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: var(--primary-orange);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: var(--shadow-heavy);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .record-button.recording {
+            background-color: #FF5252;
+            transform: scale(1.05);
+        }
+
+        .record-button i {
+            color: var(--white);
+            font-size: 2.5rem;
+        }
+
+        .hint-text {
+            text-align: center;
+            color: var(--primary-blue);
+            font-style: italic;
+            font-size: 1.1rem;
+        }
+
+        /* Mood Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            display: none;
+            padding: var(--spacing-md);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            margin-bottom: var(--spacing-md);
+            font-weight: 700;
+        }
+
+        .mood-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .mood-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: var(--spacing-md);
+            border-radius: 12px;
+            background-color: var(--primary-yellow);
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 90px;
+            margin:2px;
+        }
+
+        .mood-button.selected {
+            background-color: var(--light-orange);
+            border: 2px solid var(--primary-orange);
+            transform: scale(1.05);
+        }
+
+        .mood-emoji {
+            font-size: 2.5rem;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .mood-text {
+            font-size: 0.9rem;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .save-button {
+            width: 100%;
+            padding: var(--spacing-md);
+            background-color: var(--primary-blue);
+            color: var(--white);
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .save-button:active {
+            transform: translateY(2px);
+        }
+
+        /* Playback Screen */
+        .screen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .screen-title {
+            font-size: 1.5rem;
+            color: var(--primary-orange);
+            font-weight: 700;
+        }
+
+        .filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-xs);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .filter-button {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: 20px;
+            background-color: var(--white);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid var(--light-gray);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            margin: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .filter-button.selected {
+            background-color: var(--light-orange);
+            border-color: var(--primary-orange);
+            color: var(--primary-orange);
+        }
+
+        .filter-emoji {
+            font-size: 1.2rem;
+        }
+
+        .recordings-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .recording-card {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            box-shadow: var(--shadow);
+            position: relative;
+            margin-bottom:10px;
+        }
+
+        .recording-date {
+            color: var(--primary-blue);
+            font-size: 0.9rem;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 500;
+        }
+
+        .recording-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .recording-mood {
+            font-size: 2rem;
+        }
+
+        .recording-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .action-icon {
+            cursor: pointer;
+            font-size: 1.3rem;
+            padding: var(--spacing-xs);
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .action-icon:active {
+            background-color: var(--light-gray);
+        }
+
+        .play-icon {
+            color: var(--primary-blue);
+        }
+
+        .delete-icon {
+            color: #FF5252;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-xl);
+            color: var(--gray);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-md);
+            color: var(--light-blue);
+        }
+
+        .empty-text {
+            font-size: 1.1rem;
+            margin-bottom: var(--spacing-md);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Install Prompt */
+        .install-prompt {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--white);
+            padding: var(--spacing-md);
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 25;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .install-prompt.show {
+            transform: translateY(0);
+        }
+
+        .install-text {
+            flex: 1;
+            margin-right: var(--spacing-md);
+        }
+
+        .install-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .install-desc {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .install-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .install-button {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+
+        .install-primary {
+            background-color: var(--primary-orange);
+            color: var(--white);
+        }
+
+        .install-secondary {
+            background-color: transparent;
+            color: var(--gray);
+        }
+
+        /* Responsive */
+        @media (min-width: 768px) {
+            .quick-actions {
+                flex-direction: row;
+            }
+            
+            .action-button {
+                flex: 1;
+            }
+            
+            .mood-button {
+                width: 100px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: var(--spacing-sm);
+            }
+            
+            .welcome-card {
+                padding: var(--spacing-md);
+            }
+            
+            .companion-bubble {
+                font-size: 1.1rem;
+            }
+            
+            .mood-button {
+                width: 80px;
+                padding: var(--spacing-sm);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- App Header -->
+    <header class="app-header">
+        <div class="app-title">
+            <div class="app-logo">
+                <i class="fas fa-heart"></i>
+            </div>
+            <div class="app-name">Companion</div>
+        </div>
+        <button class="menu-button" id="menu-button">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+
+    <!-- Navigation Drawer -->
+    <div class="nav-drawer" id="nav-drawer">
+        <div class="nav-header">
+            <div class="nav-title">
+                <i class="fas fa-heart"></i>
+                Companion
+            </div>
+        </div>
+        <div class="nav-items">
+            <a class="nav-item active" data-screen="home">
+                <div class="nav-icon">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="nav-text">Home</div>
+            </a>
+            <a class="nav-item" data-screen="record">
+                <div class="nav-icon">
+                    <i class="fas fa-microphone"></i>
+                </div>
+                <div class="nav-text">Start Recording</div>
+            </a>
+            <a class="nav-item" data-screen="playback">
+                <div class="nav-icon">
+                    <i class="fas fa-history"></i>
+                </div>
+                <div class="nav-text">Memories</div>
+            </a>
+        </div>
+        <div class="nav-footer">
+            Your voice journal for daily reflections
+        </div>
+    </div>
+
+    <!-- Navigation Overlay -->
+    <div class="nav-overlay" id="nav-overlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Home Screen -->
+        <section id="home" class="screen active">
+            <div class="welcome-card">
+                <div class="welcome-icon">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <h1 class="welcome-title">Hello, friend! 👋</h1>
+                <p class="welcome-text">How are you feeling today? Companion is here to listen to your thoughts, joys, and concerns. Just press record and speak your mind.</p>
+                <div class="quick-actions">
+                    <button class="action-button" data-screen="record">
+                        <i class="fas fa-microphone"></i>
+                        Start Recording
+                    </button>
+                    <button class="action-button secondary" data-screen="playback">
+                        <i class="fas fa-history"></i>
+                        View Memories
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Record Screen -->
+        <section id="record" class="screen">
+            <div class="companion-bubble">
+                <p id="companion-prompt">What's on your mind today?</p>
+            </div>
+
+            <div class="waveform-container">
+                <div class="waveform" id="waveform">
+                    <!-- Wave bars will be generated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="record-section">
+                <div class="record-button" id="record-button">
+                    <i class="fas fa-microphone"></i>
+                </div>
+                <p class="hint-text" id="hint-text">Tap to speak</p>
+            </div>
+        </section>
+
+        <!-- Playback Screen -->
+        <section id="playback" class="screen">
+            <div class="screen-header">
+                <h2 class="screen-title">Our Conversations</h2>
+            </div>
+            
+            <div class="filter-container">
+                <div class="filter-button selected" data-filter="all">
+                    <span class="filter-emoji">✨</span>
+                    <span>All</span>
+                </div>
+                <div class="filter-button" data-filter="😊">
+                    <span class="filter-emoji">😊</span>
+                    <span>Happy</span>
+                </div>
+                <div class="filter-button" data-filter="😢">
+                    <span class="filter-emoji">😢</span>
+                    <span>Sad</span>
+                </div>
+                <div class="filter-button" data-filter="😠">
+                    <span class="filter-emoji">😠</span>
+                    <span>Angry</span>
+                </div>
+                <div class="filter-button" data-filter="😴">
+                    <span class="filter-emoji">😴</span>
+                    <span>Tired</span>
+                </div>
+                <div class="filter-button" data-filter="😌">
+                    <span class="filter-emoji">😌</span>
+                    <span>Calm</span>
+                </div>
+            </div>
+
+            <div class="recordings-list" id="recordings-list">
+                <!-- Recordings will be populated by JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Mood Selection Modal -->
+    <div class="modal-overlay" id="mood-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">How did that feel?</h2>
+            <div class="mood-container">
+                <div class="mood-button selected" data-mood="😊">
+                    <span class="mood-emoji">😊</span>
+                    <span class="mood-text">Happy</span>
+                </div>
+                <div class="mood-button" data-mood="😢">
+                    <span class="mood-emoji">😢</span>
+                    <span class="mood-text">Sad</span>
+                </div>
+                <div class="mood-button" data-mood="😠">
+                    <span class="mood-emoji">😠</span>
+                    <span class="mood-text">Angry</span>
+                </div>
+                <div class="mood-button" data-mood="😴">
+                    <span class="mood-emoji">😴</span>
+                    <span class="mood-text">Tired</span>
+                </div>
+                <div class="mood-button" data-mood="😌">
+                    <span class="mood-emoji">😌</span>
+                    <span class="mood-text">Calm</span>
+                </div>
+            </div>
+            <button class="save-button" id="save-button">Save Recording</button>
+        </div>
+    </div>
+
+    <!-- Install Prompt -->
+    <div class="install-prompt" id="install-prompt">
+        <div class="install-text">
+            <div class="install-title">Install Companion</div>
+            <div class="install-desc">Get the full app experience on your home screen</div>
+        </div>
+        <div class="install-actions">
+            <button class="install-button install-secondary" id="install-dismiss">Not Now</button>
+            <button class="install-button install-primary" id="install-app">Install</button>
+        </div>
+    </div>
+
+    <script>
+        // App State
+        const state = {
+            isRecording: false,
+            mediaRecorder: null,
+            audioChunks: [],
+            selectedMood: '😊',
+            recordings: [],
+            currentFilter: 'all',
+            deferredPrompt: null
+        };
+
+        // DOM Elements
+        const menuButton = document.getElementById('menu-button');
+        const navDrawer = document.getElementById('nav-drawer');
+        const navOverlay = document.getElementById('nav-overlay');
+        const navItems = document.querySelectorAll('.nav-item');
+        const recordButton = document.getElementById('record-button');
+        const waveform = document.getElementById('waveform');
+        const hintText = document.getElementById('hint-text');
+        const companionPrompt = document.getElementById('companion-prompt');
+        const moodModal = document.getElementById('mood-modal');
+        const moodButtons = document.querySelectorAll('.mood-button');
+        const saveButton = document.getElementById('save-button');
+        const filterButtons = document.querySelectorAll('.filter-button');
+        const recordingsList = document.getElementById('recordings-list');
+        const screenButtons = document.querySelectorAll('[data-screen]');
+        const installPrompt = document.getElementById('install-prompt');
+        const installAppButton = document.getElementById('install-app');
+        const installDismissButton = document.getElementById('install-dismiss');
+
+        // Prompts for companion
+        const prompts = [
+            "What's on your mind today?",
+            "Tell me about your day...",
+            "What made you smile recently?",
+            "What's weighing on your heart?",
+            "How are you feeling right now?",
+            "I'm here to listen whenever you're ready...",
+            "What would you like to share today?"
+        ];
+
+        // Initialize the app
+        function init() {
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Load recordings from localStorage
+            loadRecordings();
+            
+            // Generate waveform bars
+            generateWaveform();
+            
+            // Set random prompt
+            setRandomPrompt();
+            
+            // Set up PWA install prompt
+            setupPWA();
+        }
+
+        // Set up all event listeners
+        function setupEventListeners() {
+            // Menu button
+            menuButton.addEventListener('click', toggleNavDrawer);
+            
+            // Nav overlay
+            navOverlay.addEventListener('click', closeNavDrawer);
+            
+            // Navigation items
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const screenId = item.getAttribute('data-screen');
+                    switchScreen(screenId);
+                    closeNavDrawer();
+                });
+            });
+
+            // Screen buttons (like on home screen)
+            screenButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const screenId = button.getAttribute('data-screen');
+                    switchScreen(screenId);
+                });
+            });
+
+            // Record button
+            recordButton.addEventListener('click', toggleRecording);
+
+            // Mood selection
+            moodButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove selected class from all buttons
+                    moodButtons.forEach(btn => btn.classList.remove('selected'));
+                    // Add selected class to clicked button
+                    button.classList.add('selected');
+                    state.selectedMood = button.getAttribute('data-mood');
+                });
+            });
+
+            // Save recording with mood
+            saveButton.addEventListener('click', saveRecording);
+
+            // Filter buttons
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove selected class from all buttons
+                    filterButtons.forEach(btn => btn.classList.remove('selected'));
+                    // Add selected class to clicked button
+                    button.classList.add('selected');
+                    state.currentFilter = button.getAttribute('data-filter');
+                    renderRecordings();
+                });
+            });
+            
+            // PWA install buttons
+            installAppButton.addEventListener('click', installPWA);
+            installDismissButton.addEventListener('click', dismissInstallPrompt);
+        }
+
+        // Toggle navigation drawer
+        function toggleNavDrawer() {
+            navDrawer.classList.toggle('open');
+            navOverlay.classList.toggle('open');
+        }
+
+        // Close navigation drawer
+        function closeNavDrawer() {
+            navDrawer.classList.remove('open');
+            navOverlay.classList.remove('open');
+        }
+
+        // Switch between screens
+        function switchScreen(screenId) {
+            // Update active nav item
+            navItems.forEach(item => {
+                if (item.getAttribute('data-screen') === screenId) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            // Update active screen
+            document.querySelectorAll('.screen').forEach(screen => {
+                if (screen.id === screenId) {
+                    screen.classList.add('active');
+                } else {
+                    screen.classList.remove('active');
+                }
+            });
+
+            // If switching to playback screen, render recordings
+            if (screenId === 'playback') {
+                renderRecordings();
+            }
+
+            // If switching to record screen, set random prompt
+            if (screenId === 'record') {
+                setRandomPrompt();
+            }
+            
+            // Close nav drawer on mobile after selection
+            if (window.innerWidth < 768) {
+                closeNavDrawer();
+            }
+        }
+
+        // Set a random prompt for the companion
+        function setRandomPrompt() {
+            const randomIndex = Math.floor(Math.random() * prompts.length);
+            companionPrompt.textContent = prompts[randomIndex];
+        }
+
+        // Generate waveform visualization bars
+        function generateWaveform() {
+            waveform.innerHTML = '';
+            for (let i = 0; i < 20; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'wave-bar';
+                bar.style.height = '5px';
+                waveform.appendChild(bar);
+            }
+        }
+
+        // Update waveform visualization during recording
+        function updateWaveform() {
+            if (!state.isRecording) return;
+            
+            const bars = document.querySelectorAll('.wave-bar');
+            bars.forEach(bar => {
+                const randomHeight = 5 + Math.random() * 75;
+                bar.style.height = `${randomHeight}px`;
+            });
+            
+            setTimeout(updateWaveform, 100);
+        }
+
+        // Toggle recording state
+        async function toggleRecording() {
+            if (state.isRecording) {
+                stopRecording();
+            } else {
+                await startRecording();
+            }
+        }
+
+        // Start recording
+        async function startRecording() {
+            try {
+                // Reset audio chunks
+                state.audioChunks = [];
+                
+                // Get user media (audio)
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                // Create media recorder
+                state.mediaRecorder = new MediaRecorder(stream);
+                
+                // Set up event handlers
+                state.mediaRecorder.ondataavailable = event => {
+                    state.audioChunks.push(event.data);
+                };
+                
+                state.mediaRecorder.onstop = () => {
+                    // Show mood selection modal
+                    moodModal.classList.add('active');
+                };
+                
+                // Start recording
+                state.mediaRecorder.start();
+                state.isRecording = true;
+                
+                // Update UI
+                recordButton.classList.add('recording');
+                hintText.textContent = "Companion is listening...";
+                
+                // Start waveform animation
+                updateWaveform();
+                
+                // Speak companion message
+                speak("I'm listening...");
+                
+            } catch (error) {
+                console.error('Error starting recording:', error);
+                alert('Could not access microphone. Please check permissions.');
+            }
+        }
+
+        // Stop recording
+        function stopRecording() {
+            if (state.mediaRecorder && state.isRecording) {
+                state.mediaRecorder.stop();
+                state.isRecording = false;
+                
+                // Update UI
+                recordButton.classList.remove('recording');
+                hintText.textContent = "Tap to speak";
+                
+                // Stop all tracks
+                state.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                
+                // Reset waveform
+                const bars = document.querySelectorAll('.wave-bar');
+                bars.forEach(bar => {
+                    bar.style.height = '5px';
+                });
+            }
+        }
+
+        // Save recording with selected mood
+        function saveRecording() {
+            // Create blob from audio chunks
+            const audioBlob = new Blob(state.audioChunks, { type: 'audio/wav' });
+            
+            // Convert blob to base64 for storage
+            const reader = new FileReader();
+            reader.onload = function() {
+                const base64data = reader.result;
+                
+                // Create recording object
+                const recording = {
+                    id: Date.now().toString(),
+                    audioData: base64data,
+                    mood: state.selectedMood,
+                    date: new Date().toISOString(),
+                    duration: Math.floor(Math.random() * 30) + 5 // Simulated duration
+                };
+                
+                // Add to recordings array
+                state.recordings.unshift(recording);
+                
+                // Save to localStorage
+                saveRecordings();
+                
+                // Close modal
+                moodModal.classList.remove('active');
+                
+                // Speak confirmation
+                speak("Thank you for sharing that with me.");
+                
+                // Set new random prompt
+                setRandomPrompt();
+                
+                // Switch to memories screen
+                switchScreen('playback');
+            };
+            reader.readAsDataURL(audioBlob);
+        }
+
+        // Play a recording
+        function playRecording(audioData) {
+            const audio = new Audio(audioData);
+            audio.play().catch(e => {
+                console.error('Error playing audio:', e);
+                alert('Could not play recording. The audio data might be corrupted.');
+            });
+        }
+
+        // Delete a recording
+        function deleteRecording(id) {
+            if (confirm("Are you sure you want to delete this recording?")) {
+                state.recordings = state.recordings.filter(rec => rec.id !== id);
+                saveRecordings();
+                renderRecordings();
+            }
+        }
+
+        // Text-to-speech for companion responses
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.pitch = 1.1;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Save recordings to localStorage
+        function saveRecordings() {
+            localStorage.setItem('companion-recordings', JSON.stringify(state.recordings));
+        }
+
+        // Load recordings from localStorage
+        function loadRecordings() {
+            const stored = localStorage.getItem('companion-recordings');
+            if (stored) {
+                try {
+                    state.recordings = JSON.parse(stored);
+                // Ensure all recordings have the required fields
+                    state.recordings = state.recordings.filter(rec => rec && rec.id && rec.audioData);
+                } catch (e) {
+                    console.error('Error loading recordings:', e);
+                    state.recordings = [];
+                }
+            }
+        }
+
+        // Render recordings list based on current filter
+        function renderRecordings() {
+            recordingsList.innerHTML = '';
+            
+            // Filter recordings
+            let filteredRecordings = state.recordings;
+            if (state.currentFilter !== 'all') {
+                filteredRecordings = state.recordings.filter(rec => rec.mood === state.currentFilter);
+            }
+            
+            // Display message if no recordings
+            if (filteredRecordings.length === 0) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                
+                if (state.currentFilter === 'all') {
+                    emptyState.innerHTML = `
+                        <div class="empty-icon">
+                            <i class="fas fa-microphone-slash"></i>
+                        </div>
+                        <div class="empty-text">No conversations yet</div>
+                        <button class="action-button" data-screen="record">
+                            <i class="fas fa-microphone"></i>
+                            Start Your First Recording
+                        </button>
+                    `;
+                } else {
+                    const moodName = getMoodName(state.currentFilter);
+                    emptyState.innerHTML = `
+                        <div class="empty-icon">
+                            <i class="fas fa-smile"></i>
+                        </div>
+                        <div class="empty-text">No ${moodName} conversations yet</div>
+                    `;
+                }
+                
+                recordingsList.appendChild(emptyState);
+                
+                // Add event listener to the button if it exists
+                const startButton = emptyState.querySelector('.action-button');
+                if (startButton) {
+                    startButton.addEventListener('click', () => {
+                        switchScreen('record');
+                    });
+                }
+                
+                return;
+            }
+            
+            // Create recording cards
+            filteredRecordings.forEach(recording => {
+                const card = document.createElement('div');
+                card.className = 'recording-card';
+                
+                const date = new Date(recording.date);
+                const formattedDate = date.toLocaleDateString() + ' • ' + (recording.duration || '5') + 's';
+                
+                card.innerHTML = `
+                    <div class="recording-date">${formattedDate}</div>
+                    <div class="recording-content">
+                        <div class="recording-mood">${recording.mood}</div>
+                        <div class="recording-actions">
+                            <i class="fas fa-play action-icon play-icon" data-id="${recording.id}"></i>
+                            <i class="fas fa-trash action-icon delete-icon" data-id="${recording.id}"></i>
+                        </div>
+                    </div>
+                `;
+                
+                recordingsList.appendChild(card);
+            });
+            
+            // Add event listeners to action buttons using event delegation
+            recordingsList.addEventListener('click', (e) => {
+                const target = e.target;
+                const id = target.getAttribute('data-id');
+                
+                if (!id) return;
+                
+                if (target.classList.contains('fa-play')) {
+                    const recording = state.recordings.find(rec => rec.id === id);
+                    if (recording && recording.audioData) {
+                        playRecording(recording.audioData);
+                    }
+                } else if (target.classList.contains('fa-trash')) {
+                    deleteRecording(id);
+                }
+            });
+        }
+
+        // Get mood name from emoji
+        function getMoodName(emoji) {
+            const moodMap = {
+                '😊': 'Happy',
+                '😢': 'Sad',
+                '😠': 'Angry',
+                '😴': 'Tired',
+                '😌': 'Calm'
+            };
+            return moodMap[emoji] || '';
+        }
+
+        // PWA Installation
+        function setupPWA() {
+            // Listen for beforeinstallprompt event
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // Prevent the mini-infobar from appearing on mobile
+                e.preventDefault();
+                // Stash the event so it can be triggered later
+                state.deferredPrompt = e;
+                // Show our custom install prompt
+                setTimeout(() => {
+                    installPrompt.classList.add('show');
+                }, 3000);
+            });
+
+            // Listen for app installed event
+            window.addEventListener('appinstalled', () => {
+                // Hide the install prompt
+                installPrompt.classList.remove('show');
+                // Clear the deferredPrompt so it can be garbage collected
+                state.deferredPrompt = null;
+            });
+        }
+
+        function installPWA() {
+            if (state.deferredPrompt) {
+                // Show the install prompt
+                state.deferredPrompt.prompt();
+                // Wait for the user to respond to the prompt
+                state.deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    // Clear the deferredPrompt variable
+                    state.deferredPrompt = null;
+                    // Hide the install prompt
+                    installPrompt.classList.remove('show');
+                });
+            }
+        }
+
+        function dismissInstallPrompt() {
+            installPrompt.classList.remove('show');
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
