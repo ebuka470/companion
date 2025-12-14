@@ -1,5 +1,5 @@
 self.addEventListener('install', e => {
-  console.log('ClearWords installed');
+  console.log('Companion installed');
 });
 
 self.addEventListener('fetch', e => {
